@@ -110,7 +110,7 @@ matrix.innerHTML=`
 <strong>Share of Voice stimata</strong> ${sov.toFixed(2)}% <span class="info-btn" onclick="openModal('sov')">i</span><br><br>
 <strong>Excess Share of Voice (ESOV)</strong> ${esov}% <span class="info-btn" onclick="openModal('esov')">i</span>`;
 
-kpis.innerHTML=`<div class="kpi-card"><h3>Attention Index</h3><p>${(upper*0.8+mid*0.5+lower*0.3).toFixed(0)}</p></div>`;
+
 }
 
 function openModal(type){
@@ -128,3 +128,4 @@ function renderChart(u,m,l){const ctx=document.getElementById('chart');if(chart)
 </script>
 </body>
 </html>
+
