@@ -174,10 +174,15 @@ let upper=45,mid=30,lower=25;
 if(timeframe==="Short term"){upper-=10;lower+=10}
 if(timeframe==="Long term"){upper+=10;lower-=10}
 
-// 3. Brand Maturity CROSS Time-frame logic (+/- 5 points)
-if(timeframe==="Short term" && maturity==="Consolidato"){
-    upper+=5; lower-=5;
+// 3. Brand Maturity CROSS Time-frame logic
+if(timeframe==="Short term"){
+    if(maturity==="Consolidato"){
+        upper+=5; lower-=5;
+    } else if(maturity==="Medio" || maturity==="Lancio"){
+        upper-=3; lower+=3;
+    }
 }
+
 if(timeframe==="Long term" && maturity==="Lancio"){
     upper+=5; lower-=5;
 }
