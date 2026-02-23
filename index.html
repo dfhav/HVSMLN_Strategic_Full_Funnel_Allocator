@@ -27,7 +27,6 @@ button:hover{background:#1e293b}
 .modal-content{background:white;padding:25px;border-radius:12px;max-width:500px}
 .close{float:right;cursor:pointer;font-weight:bold}
 .target-info{font-size:12px;color:#64748b;margin-top:3px}
-/* Nuova nota in grigio */
 .footer-note {margin-top:40px; font-size:12px; color:#808080; line-height:1.5; border-top: 1px solid #e2e8f0; padding-top: 20px;}
 </style>
 </head>
@@ -58,6 +57,13 @@ button:hover{background:#1e293b}
 <option>Mass Market</option>
 <option>Niche</option>
 <option>Not Applicable</option>
+</select>
+
+<label>Maturità del Brand</label>
+<select id="brandMaturity">
+<option value="Medio">Medio (Consolidamento)</option>
+<option value="Consolidato">Consolidato (Leader di mercato)</option>
+<option value="Lancio">Lancio (Nuovo Brand/Prodotto)</option>
 </select>
 
 <label>Market Size (€ milioni)</label>
@@ -93,7 +99,7 @@ button:hover{background:#1e293b}
 <div class="matrix" id="matrix"></div>
 
 <div class="footer-note">
-    The tool integrates Brand Building and Activation principles inspired by the Binet & Field framework, dynamically adjusting the allocation across Upper, Mid, and Lower Funnel based on timeframe and target profile. Investment intensity is modeled through a logarithmic function, capturing diminishing returns as spend increases.
+    The tool integrates Brand Building and Activation principles inspired by the Binet & Field framework, dynamically adjusting the allocation across Upper, Mid, and Lower Funnel based on timeframe, brand maturity, and target profile. Investment intensity is modeled through a logarithmic function, capturing diminishing returns as spend increases.
 </div>
 
 </div>
@@ -106,7 +112,6 @@ button:hover{background:#1e293b}
 </div>
 
 <script>
-
 const targets = {
 "Target Entità Individui":{size:52238950,type:"balanced"},
 "Adu 25-54":{size:23383730,type:"balanced"},
@@ -159,23 +164,37 @@ function calculate(){
 let spend=parseFloat(document.getElementById("spend").value);
 let marketSize=parseFloat(document.getElementById("marketSize").value);
 let timeframe=document.getElementById("timeframe").value;
+let maturity=document.getElementById("brandMaturity").value;
 let selectedTarget=document.getElementById("target").value;
 
+// 1. Base Weights
 let upper=45,mid=30,lower=25;
 
+// 2. Time-frame Adjustments
 if(timeframe==="Short term"){upper-=10;lower+=10}
 if(timeframe==="Long term"){upper+=10;lower-=10}
 
+// 3. Brand Maturity CROSS Time-frame logic (+/- 5 points)
+if(timeframe==="Short term" && maturity==="Consolidato"){
+    upper+=5; lower-=5;
+}
+if(timeframe==="Long term" && maturity==="Lancio"){
+    upper+=5; lower-=5;
+}
+
+// 4. Target Profile Adjustments
 if(selectedTarget!==""){
  let profile=targets[selectedTarget].type;
  if(profile==="digital-heavy"){lower+=10;upper-=5;mid-=5;}
  if(profile==="traditional"){upper+=10;lower-=5;mid-=5;}
 }
 
+// 5. Logarithmic Saturation (Diminishing Returns)
 let sat=Math.log(spend+1);
 upper+=sat*2;
 lower-=sat*2;
 
+// 6. Normalization
 let total=upper+mid+lower;
 upper=Math.round((upper/total)*100);
 mid=Math.round((mid/total)*100);
@@ -196,7 +215,6 @@ matrix.innerHTML=`
 <strong>Binet & Field Ratio</strong> ${bfRatio}:1 <span class="info-btn" onclick="openModal('bf')">i</span><br><br>
 <strong>Share of Voice stimata</strong> ${sov.toFixed(2)}% <span class="info-btn" onclick="openModal('sov')">i</span><br><br>
 <strong>Excess Share of Voice (ESOV)</strong> ${esov}% <span class="info-btn" onclick="openModal('esov')">i</span>`;
-
 }
 
 function openModal(type){
