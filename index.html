@@ -27,6 +27,8 @@ button:hover{background:#1e293b}
 .modal-content{background:white;padding:25px;border-radius:12px;max-width:500px}
 .close{float:right;cursor:pointer;font-weight:bold}
 .target-info{font-size:12px;color:#64748b;margin-top:3px}
+/* Nuova nota in grigio */
+.footer-note {margin-top:40px; font-size:12px; color:#808080; line-height:1.5; border-top: 1px solid #e2e8f0; padding-top: 20px;}
 </style>
 </head>
 <body>
@@ -90,6 +92,10 @@ button:hover{background:#1e293b}
 <canvas id="chart"></canvas>
 <div class="matrix" id="matrix"></div>
 
+<div class="footer-note">
+    The tool integrates Brand Building and Activation principles inspired by the Binet & Field framework, dynamically adjusting the allocation across Upper, Mid, and Lower Funnel based on timeframe and target profile. Investment intensity is modeled through a logarithmic function, capturing diminishing returns as spend increases.
+</div>
+
 </div>
 
 <div class="modal" id="modal">
@@ -102,7 +108,6 @@ button:hover{background:#1e293b}
 <script>
 
 const targets = {
-
 "Target Entità Individui":{size:52238950,type:"balanced"},
 "Adu 25-54":{size:23383730,type:"balanced"},
 "Adu 18-34":{size:10458850,type:"digital-heavy"},
@@ -131,7 +136,6 @@ const targets = {
 "MILLENIALS (29 – 44)":{size:11291260,type:"balanced"},
 "GEN X (45 – 60)":{size:15122390,type:"balanced"},
 "BOOMERS (61 – 70)":{size:10560170,type:"traditional"}
-
 };
 
 const targetSelect=document.getElementById("target");
@@ -152,7 +156,6 @@ if(t===""){
 }
 
 function calculate(){
-
 let spend=parseFloat(document.getElementById("spend").value);
 let marketSize=parseFloat(document.getElementById("marketSize").value);
 let timeframe=document.getElementById("timeframe").value;
@@ -218,10 +221,6 @@ backgroundColor:['#E50100','#008596','#0F172A']}]},
 options:{plugins:{legend:{position:'bottom'}}}
 });
 }
-
 </script>
 </body>
 </html>
-
-
-
