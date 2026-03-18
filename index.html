@@ -1,249 +1,346 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strategic Full Funnel Budget Allocator</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body{font-family:'Inter',Arial,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);margin:0;padding:30px}
-.container{max-width:1250px;margin:auto;background:#ffffff;padding:35px;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.25)}
-h1{margin:0 0 5px 0;font-size:26px}
-.subtitle{color:#64748b;margin-bottom:25px}
-.section-title{font-weight:600;margin-bottom:10px;font-size:13px;text-transform:uppercase;color:#475569}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
-label{font-size:12px;font-weight:600;color:#334155;margin-top:10px;display:block}
-select,input{width:100%;padding:9px;margin-top:5px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc}
-button{margin-top:20px;padding:12px;border:none;border-radius:10px;background:#0f172a;color:white;font-weight:600;cursor:pointer}
-button:hover{background:#1e293b}
-.info-btn{margin-left:8px;padding:2px 8px;border-radius:50%;background:#334155;color:white;font-size:11px;cursor:pointer}
-.results{margin-top:35px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.card{background:#f1f5f9;padding:18px;border-radius:16px;text-align:center}
-.card h3{margin:0;font-size:13px;color:#475569}
-.card p{font-size:20px;font-weight:700;margin:8px 0}
-#chart{width:50% !important;max-width:400px;margin:auto;margin-top:30px}
-.matrix{margin-top:35px;padding:20px;background:#eef2f7;border-radius:14px;font-size:14px}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center}
-.modal-content{background:white;padding:25px;border-radius:12px;max-width:500px}
-.close{float:right;cursor:pointer;font-weight:bold}
-.target-info{font-size:12px;color:#64748b;margin-top:3px}
-.footer-note {margin-top:40px; font-size:12px; color:#808080; line-height:1.5; border-top: 1px solid #e2e8f0; padding-top: 20px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Funnel Allocator Pro - Full Info & Phase Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; --upper: #ef4444; --mid: #3b82f6; --lower: #0f172a; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+        
+        .phase-selector { display: flex; gap: 15px; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 25px; align-items: center; border: 1px solid #e2e8f0; }
+        .phase-toggle { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+
+        .mode-switch { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 13px; }
+        .switch { position: relative; display: inline-block; width: 42px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider.upper-s { background-color: var(--upper); }
+        input:checked + .slider.mid-s { background-color: var(--mid); }
+        input:checked + .slider.lower-s { background-color: var(--lower); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        label { display: block; font-size: 11px; font-weight: 700; margin-top: 15px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; box-sizing: border-box;}
+        
+        button.run-btn { width: 100%; margin-top: 25px; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        button.run-btn:hover { background: #1e293b; transform: translateY(-1px); }
+        .info-trigger { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: #475569; }
+
+        .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 35px; }
+        .card { background: #f8fafc; padding: 25px; border-radius: 14px; text-align: center; border: 1px solid #e2e8f0; transition: 0.3s; }
+        .card.disabled { opacity: 0.3; background: #f1f5f9; border-style: dashed; transform: scale(0.95); }
+        .card h3 { margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; }
+        .card p { margin: 12px 0 0; font-size: 28px; font-weight: 800; color: var(--primary); }
+
+        #chart-wrapper { max-width: 380px; margin: 40px auto; }
+
+        .kpi-footer { margin-top: 35px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; border-top: 2px solid #f1f5f9; padding-top: 30px; }
+        .kpi-item { background: #fff; padding: 15px; border-radius: 10px; }
+        .kpi-item span { display: block; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-item strong { font-size: 20px; color: var(--primary); display: block; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(6px); overflow-y: auto; }
+        .modal-content { background: white; margin: 40px auto; padding: 40px; border-radius: 24px; width: 90%; max-width: 850px; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        .close-modal { position: absolute; right: 25px; top: 20px; font-size: 28px; cursor: pointer; color: #94a3b8; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 13px; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        th { background: #f8fafc; color: #475569; }
+        .method-note { font-style: italic; color: #475569; font-size: 13px; border-left: 4px solid var(--accent); padding: 15px; background: #eff6ff; margin: 25px 0; border-radius: 0 8px 8px 0; line-height: 1.6; }
+        .metric-info h4 { margin: 20px 0 5px 0; color: var(--primary); font-size: 15px; }
+        .metric-info p { margin: 0 0 15px 0; font-size: 13px; color: #64748b; }
+    </style>
 </head>
 <body>
+
 <div class="container">
-<h1>Strategic Full Funnel Budget Allocator</h1>
-<p class="subtitle">Budget Allocation Optimization under Diminishing Returns</p>
-<p class="subtitle">Scenario planning dinamico per Target vs Total Market</p>
+    <div class="header">
+        <h1 style="font-size: 22px; margin: 0; font-weight: 800;">Strategic Funnel Allocator</h1>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div class="mode-switch">
+                <span style="color: #64748b">Cautelativa</span>
+                <label class="switch">
+                    <input type="checkbox" id="modeToggle">
+                    <span class="slider"></span>
+                </label>
+                <span style="color: var(--accent)">Aggressiva</span>
+            </div>
+            <button class="info-trigger" onclick="openModal()">Info & Benchmark</button>
+        </div>
+    </div>
 
-<div class="grid">
-<div>
-<div class="section-title">Brand & Market Variables</div>
+    <div class="phase-selector">
+        <span style="font-size: 11px; font-weight: 800; color: #64748b; margin-right: 10px;">FASI ATTIVE NEL PIANO:</span>
+        <div class="phase-toggle">
+            <label class="switch"><input type="checkbox" id="upActive" checked onchange="calculate()"><span class="slider upper-s"></span></label>
+            <span style="color: var(--upper)">Upper</span>
+        </div>
+        <div class="phase-toggle">
+            <label class="switch"><input type="checkbox" id="midActive" checked onchange="calculate()"><span class="slider mid-s"></span></label>
+            <span style="color: var(--mid)">Mid</span>
+        </div>
+        <div class="phase-toggle">
+            <label class="switch"><input type="checkbox" id="lowActive" checked onchange="calculate()"><span class="slider lower-s"></span></label>
+            <span style="color: var(--lower)">Lower</span>
+        </div>
+    </div>
 
-<label>Categoria</label>
-<select id="category">
-<option>All categories</option>
-<option>Automotive</option>
-<option>FMCG</option>
-<option>Finance</option>
-<option>Retail Large</option>
-<option>Retail Small</option>
-<option>Telco</option>
-<option>Travel</option>
-</select>
+    <div class="grid">
+        <div>
+            <div style="font-weight: 800; font-size: 11px; color: var(--accent); text-transform: uppercase;">1. Brand & Market</div>
+            <label>Categoria Business</label>
+            <select id="category">
+                <option value="Finance">Finance / Insurance</option>
+                <option value="Automotive">Automotive</option>
+                <option value="FMCG">FMCG (Largo Consumo)</option>
+                <option value="RetailLarge">Retail Large</option>
+                <option value="RetailSmall">Retail Small</option>
+                <option value="Telco">Telco / Utilities</option>
+                <option value="Travel">Travel / Leisure</option>
+                <option value="Generic">Generic Mkt</option>
+            </select>
+            
+            <label>Maturità Brand</label>
+            <select id="maturity">
+                <option value="Consolidato">Leader di Mercato</option>
+                <option value="Medio">Brand Consolidato (Medio)</option>
+                <option value="Lancio">Nuovo Lancio / Startup</option>
+            </select>
 
-<label>Market Type</label>
-<select id="marketType">
-<option>Mass Market</option>
-<option>Niche</option>
-<option>Not Applicable</option>
-</select>
+            <label>Target Audience</label>
+            <select id="targetSelect" onchange="updateTargetInfo()"></select>
+            <div id="targetDisplay" style="font-size: 11px; color: var(--accent); margin-top: 4px; height: 12px; font-weight: 600;"></div>
+        </div>
+        
+        <div>
+            <div style="font-weight: 800; font-size: 11px; color: var(--accent); text-transform: uppercase;">2. Strategy & Budget</div>
+            <label>Budget Media Annuo (€ mln)</label>
+            <input type="number" id="spend" value="10">
+            
+            <label>Market Size (€ mln)</label>
+            <input type="number" id="market" value="200">
+            
+            <label>Market Type</label>
+            <select id="marketType">
+                <option value="Mass">Mass Market</option>
+                <option value="Niche">Mercato di Nicchia</option>
+            </select>
 
-<label>Maturità del Brand</label>
-<select id="brandMaturity">
-<option value="Medio">Medio (Consolidamento)</option>
-<option value="Consolidato">Consolidato (Leader di mercato)</option>
-<option value="Lancio">Lancio (Nuovo Brand/Prodotto)</option>
-</select>
+            <div style="font-weight: 800; font-size: 11px; color: var(--accent); text-transform: uppercase; margin-top:20px;">3. Optimisation Time-frame</div>
+            <label>Orizzonte Temporale</label>
+            <select id="timeframe">
+                <option value="Lungo">Lungo Termine (1 anno+)</option>
+                <option value="Medio" selected>Medio Termine (6 mesi)</option>
+                <option value="Breve">Breve Termine (Tactical/Sales)</option>
+            </select>
+            
+            <button class="run-btn" onclick="calculate()">ESEGUI SIMULAZIONE</button>
+        </div>
+    </div>
 
-<label>Market Size (€ milioni)</label>
-<input type="number" id="marketSize" value="500">
+    <div class="results" id="results"></div>
 
-<label>Target (opzionale)</label>
-<select id="target" onchange="updateTargetInfo()">
-<option value="">Nessun target specifico (Total Market)</option>
-</select>
-<div class="target-info" id="targetUniverse"></div>
+    <div id="chart-wrapper">
+        <canvas id="myChart"></canvas>
+    </div>
 
+    <div class="kpi-footer" id="kpiFooter"></div>
 </div>
 
-<div>
-<div class="section-title">Investment Strategy</div>
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 style="margin-top: 0; font-weight: 800;">Metodologia & Benchmark</h2>
+        
+        <p class="method-note">
+            "The tool integrates Brand Building and Activation principles inspired by the Binet & Field framework, dynamically adjusting the allocation across Upper, Mid, and Lower Funnel based on timeframe, brand maturity, and target profile. Investment intensity is modeled through a logarithmic function, capturing diminishing returns as spend increases."
+        </p>
 
-<label>Annual Media Spend (€ milioni)</label>
-<input type="number" id="spend" value="20">
+        <h3>Benchmark per Categoria (Base 3-Fasi)</h3>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">I valori mostrano l'allocazione standard. Se disattivi una fase, il budget viene ricalibrato automaticamente sulle rimanenti.</p>
+        <table>
+            <tr><th>Categoria</th><th>Cautelativa (U/M/L)</th><th>Aggressiva (U/M/L)</th></tr>
+            <tr><td>Finance</td><td>65 / 20 / 15</td><td>55 / 20 / 25</td></tr>
+            <tr><td>Automotive</td><td>62 / 20 / 18</td><td>50 / 25 / 25</td></tr>
+            <tr><td>FMCG</td><td>60 / 15 / 25</td><td>50 / 15 / 35</td></tr>
+            <tr><td>Retail Large</td><td>45 / 25 / 30</td><td>35 / 25 / 40</td></tr>
+            <tr><td>Retail Small</td><td>35 / 25 / 40</td><td>25 / 25 / 50</td></tr>
+            <tr><td>Generic</td><td>55 / 25 / 20</td><td>40 / 25 / 35</td></tr>
+        </table>
 
-<label>Optimisation Time-frame</label>
-<select id="timeframe">
-<option>Short term</option>
-<option>Medium term</option>
-<option>Long term</option>
-</select>
+        <div class="metric-info">
+            <h4>Binet & Field Ratio</h4>
+            <p>Rapporto tra investimenti in Brand Building (Upper+Mid) e Activation (Lower). Un ratio equilibrato assicura crescita a lungo termine senza sacrificare le vendite immediate.</p>
+            
+            <h4>Share of Voice (SOV) stimata</h4>
+            <p>La percentuale di spesa del brand rispetto al totale degli investimenti pubblicitari del mercato di riferimento inserito.</p>
+            
+            <h4>Excess Share of Voice (ESOV)</h4>
+            <p>La differenza tra SOV e quota di mercato (stimata qui al 10%). Un ESOV positivo è il principale driver per l'acquisizione di nuovi punti di market share.</p>
 
-<button onclick="calculate()">Run Simulation</button>
-</div>
-</div>
-
-<div class="results" id="results"></div>
-<canvas id="chart"></canvas>
-<div class="matrix" id="matrix"></div>
-
-<div class="footer-note">
-    The tool integrates Brand Building and Activation principles inspired by the Binet & Field framework, dynamically adjusting the allocation across Upper, Mid, and Lower Funnel based on timeframe, brand maturity, and target profile. Investment intensity is modeled through a logarithmic function, capturing diminishing returns as spend increases.
-</div>
-
-</div>
-
-<div class="modal" id="modal">
-<div class="modal-content">
-<span class="close" onclick="closeModal()">X</span>
-<div id="modalText"></div>
-</div>
+            <h4>Ricalibrazione Dinamica</h4>
+            <p>Se una fase viene esclusa (es. "Solo Media-Bassa"), l'algoritmo azzera la fase spenta e ridistribuisce il peso residuo sulle fasi attive mantenendo i rapporti di forza proporzionali calcolati in base a categoria e target.</p>
+        </div>
+    </div>
 </div>
 
 <script>
+Chart.register(ChartDataLabels);
+
 const targets = {
-"Target Entità Individui":{size:52238950,type:"balanced"},
-"Adu 25-54":{size:23383730,type:"balanced"},
-"Adu 18-34":{size:10458850,type:"digital-heavy"},
-"RA":{size:25570960,type:"balanced"},
-"Adu 35-54":{size:17034800,type:"balanced"},
-"Adu 25-64":{size:31970760,type:"balanced"},
-"Adu Over64":{size:13882540,type:"traditional"},
-"Adu Over18":{size:49786916,type:"balanced"},
-"Adu 18-24":{size:4010306,type:"digital-heavy"},
-"Adu 25-34":{size:6271725,type:"digital-heavy"},
-"Adu 35-44":{size:7491822,type:"balanced"},
-"Adu 35-64":{size:25621840,type:"balanced"},
-"Adu 45-54":{size:9510176,type:"balanced"},
-"Adu 55-64":{size:8570061,type:"traditional"},
-"Adu Over35":{size:39823304,type:"balanced"},
-"Adu 20-54":{size:26374360,type:"balanced"},
-"Adu 18-64":{size:35856000,type:"balanced"},
-"Donne 18-64":{size:18067830,type:"balanced"},
-"GEN Z (14-29)":{size:9463985,type:"digital-heavy"},
-"Donne 18-34":{size:5074900,type:"digital-heavy"},
-"Donne 18-44":{size:8835440,type:"balanced"},
-"Donne 18-54":{size:13357340,type:"balanced"},
-"Donne 25-44":{size:6670890,type:"balanced"},
-"Donne 25-54":{size:11417750,type:"balanced"},
-"Uomini 18-64":{size:18012860,type:"balanced"},
-"MILLENIALS (29 – 44)":{size:11291260,type:"balanced"},
-"GEN X (45 – 60)":{size:15122390,type:"balanced"},
-"BOOMERS (61 – 70)":{size:10560170,type:"traditional"}
+    "Target Entità Individui":{size:52238950,type:"balanced"},
+    "Adu 25-54":{size:23383730,type:"balanced"},
+    "Adu 18-34":{size:10458850,type:"digital-heavy"},
+    "RA":{size:25570960,type:"balanced"},
+    "Adu 35-54":{size:17034800,type:"balanced"},
+    "Adu 25-64":{size:31970760,type:"balanced"},
+    "Adu Over64":{size:13882540,type:"traditional"},
+    "Adu Over18":{size:49786916,type:"balanced"},
+    "Adu 18-24":{size:4010306,type:"digital-heavy"},
+    "Adu 25-34":{size:6271725,type:"digital-heavy"},
+    "Adu 35-44":{size:7491822,type:"balanced"},
+    "Adu 35-64":{size:25621840,type:"balanced"},
+    "Adu 45-54":{size:9510176,type:"balanced"},
+    "Adu 55-64":{size:8570061,type:"traditional"},
+    "Adu Over35":{size:39823304,type:"balanced"},
+    "Adu 20-54":{size:26374360,type:"balanced"},
+    "Adu 18-64":{size:35856000,type:"balanced"},
+    "Donne 18-64":{size:18067830,type:"balanced"},
+    "GEN Z (14-29)":{size:9463985,type:"digital-heavy"},
+    "Donne 18-34":{size:5074900,type:"digital-heavy"},
+    "Donne 18-44":{size:8835440,type:"balanced"},
+    "Donne 18-54":{size:13357340,type:"balanced"},
+    "Donne 25-44":{size:6670890,type:"balanced"},
+    "Donne 25-54":{size:11417750,type:"balanced"},
+    "Uomini 18-64":{size:18012860,type:"balanced"},
+    "MILLENIALS (29 – 44)":{size:11291260,type:"balanced"},
+    "GEN X (45 – 60)":{size:15122390,type:"balanced"},
+    "BOOMERS (61 – 70)":{size:10560170,type:"traditional"}
 };
 
-const targetSelect=document.getElementById("target");
-for(let t in targets){
-let opt=document.createElement("option");
-opt.value=t;
-opt.text=t;
-targetSelect.appendChild(opt);
-}
-
-function updateTargetInfo(){
-let t=document.getElementById("target").value;
-if(t===""){
- document.getElementById("targetUniverse").innerHTML="";
-}else{
- document.getElementById("targetUniverse").innerHTML="Universe: "+targets[t].size.toLocaleString();
-}
-}
-
-function calculate(){
-let spend=parseFloat(document.getElementById("spend").value);
-let marketSize=parseFloat(document.getElementById("marketSize").value);
-let timeframe=document.getElementById("timeframe").value;
-let maturity=document.getElementById("brandMaturity").value;
-let selectedTarget=document.getElementById("target").value;
-
-// 1. Base Weights
-let upper=45,mid=30,lower=25;
-
-// 2. Time-frame Adjustments
-if(timeframe==="Short term"){upper-=10;lower+=10}
-if(timeframe==="Long term"){upper+=10;lower-=10}
-
-// 3. Brand Maturity CROSS Time-frame logic
-if(timeframe==="Short term"){
-    if(maturity==="Consolidato"){
-        upper+=5; lower-=5;
-    } else if(maturity==="Medio" || maturity==="Lancio"){
-        upper-=3; lower+=3;
+const benchmarks = {
+    cautelativa: {
+        Finance: [65, 20, 15], Automotive: [62, 20, 18], FMCG: [60, 15, 25],
+        RetailLarge: [45, 25, 30], RetailSmall: [35, 25, 40], Telco: [50, 25, 25],
+        Travel: [48, 22, 30], Generic: [55, 25, 20]
+    },
+    aggressiva: {
+        Finance: [55, 20, 25], Automotive: [50, 25, 25], FMCG: [50, 15, 35],
+        RetailLarge: [35, 25, 40], RetailSmall: [25, 25, 50], Telco: [40, 25, 35],
+        Travel: [35, 25, 40], Generic: [40, 25, 35]
     }
+};
+
+let myChart = null;
+
+window.onload = () => {
+    const sel = document.getElementById('targetSelect');
+    for(let t in targets) {
+        let opt = document.createElement('option');
+        opt.value = t; opt.text = t;
+        sel.appendChild(opt);
+    }
+    calculate();
+};
+
+function updateTargetInfo() {
+    const val = document.getElementById('targetSelect').value;
+    document.getElementById('targetDisplay').innerText = "Universe: " + targets[val].size.toLocaleString();
 }
 
-if(timeframe==="Long term" && maturity==="Lancio"){
-    upper+=5; lower-=5;
+function calculate() {
+    const isAggressive = document.getElementById('modeToggle').checked;
+    const mode = isAggressive ? 'aggressiva' : 'cautelativa';
+    const cat = document.getElementById('category').value;
+    const maturity = document.getElementById('maturity').value;
+    const mType = document.getElementById('marketType').value;
+    const targetKey = document.getElementById('targetSelect').value;
+    const time = document.getElementById('timeframe').value;
+    const spend = parseFloat(document.getElementById('spend').value) || 0;
+    const market = parseFloat(document.getElementById('market').value) || 1;
+
+    const upActive = document.getElementById('upActive').checked;
+    const midActive = document.getElementById('midActive').checked;
+    const lowActive = document.getElementById('lowActive').checked;
+
+    if(!upActive && !midActive && !lowActive) {
+        document.getElementById('upActive').checked = true;
+        return calculate();
+    }
+
+    let [u, m, l] = benchmarks[mode][cat] || benchmarks[mode]["Generic"];
+
+    if(mType === "Niche") { u -= 6; l += 6; }
+    if(maturity === "Lancio") { u += 8; l -= 8; }
+    if(targets[targetKey].type === "digital-heavy") { l += 5; u -= 5; }
+    if(targets[targetKey].type === "traditional") { u += 5; l -= 5; }
+    if(time === "Lungo") { u += 5; l -= 5; }
+    if(time === "Breve") { u -= 10; l += 10; }
+
+    if(!upActive) u = 0;
+    if(!midActive) m = 0;
+    if(!lowActive) l = 0;
+
+    let totalActive = u + m + l;
+    u = totalActive > 0 ? Math.round((u/totalActive)*100) : 0;
+    m = totalActive > 0 ? Math.round((m/totalActive)*100) : 0;
+    l = totalActive > 0 ? (100 - u - m) : 0;
+
+    document.getElementById('results').innerHTML = `
+        <div class="card ${!upActive ? 'disabled' : ''}"><h3>Upper Funnel</h3><p>${u}%</p></div>
+        <div class="card ${!midActive ? 'disabled' : ''}"><h3>Mid Funnel</h3><p>${m}%</p></div>
+        <div class="card ${!lowActive ? 'disabled' : ''}"><h3>Lower Funnel</h3><p>${l}%</p></div>`;
+
+    const sov = (spend / market) * 100;
+    const bfRatio = l > 0 ? ((u + m) / l).toFixed(2) : 'N/A';
+    const esov = (sov - 10).toFixed(1);
+
+    document.getElementById('kpiFooter').innerHTML = `
+        <div class="kpi-item"><span>Binet & Field Ratio</span><strong>${bfRatio}:1</strong></div>
+        <div class="kpi-item"><span>SOV Stimata</span><strong>${sov.toFixed(2)}%</strong></div>
+        <div class="kpi-item"><span>Excess Share of Voice</span><strong>${esov}%</strong></div>`;
+
+    renderChart(u, m, l);
 }
 
-// 4. Target Profile Adjustments
-if(selectedTarget!==""){
- let profile=targets[selectedTarget].type;
- if(profile==="digital-heavy"){lower+=10;upper-=5;mid-=5;}
- if(profile==="traditional"){upper+=10;lower-=5;mid-=5;}
+function renderChart(u, m, l) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    if(myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Upper', 'Mid', 'Lower'],
+            datasets: [{
+                data: [u, m, l],
+                backgroundColor: ['#ef4444', '#3b82f6', '#0f172a'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 14 },
+                    formatter: (value) => value > 0 ? value + '%' : ''
+                }
+            }
+        }
+    });
 }
 
-// 5. Logarithmic Saturation (Diminishing Returns)
-let sat=Math.log(spend+1);
-upper+=sat*2;
-lower-=sat*2;
-
-// 6. Normalization
-let total=upper+mid+lower;
-upper=Math.round((upper/total)*100);
-mid=Math.round((mid/total)*100);
-lower=100-upper-mid;
-
-let sov=(spend/marketSize)*100;
-let bfRatio=((upper+mid)/lower).toFixed(2);
-let esov=(sov-10).toFixed(2);
-
-results.innerHTML=
-`<div class="card"><h3>Upper (Brand)</h3><p>${upper}%</p></div>
-<div class="card"><h3>Mid</h3><p>${mid}%</p></div>
-<div class="card"><h3>Lower (Activation)</h3><p>${lower}%</p></div>`;
-
-renderChart(upper,mid,lower);
-
-matrix.innerHTML=`
-<strong>Binet & Field Ratio</strong> ${bfRatio}:1 <span class="info-btn" onclick="openModal('bf')">i</span><br><br>
-<strong>Share of Voice stimata</strong> ${sov.toFixed(2)}% <span class="info-btn" onclick="openModal('sov')">i</span><br><br>
-<strong>Excess Share of Voice (ESOV)</strong> ${esov}% <span class="info-btn" onclick="openModal('esov')">i</span>`;
-}
-
-function openModal(type){
-let text="";
-if(type==='bf')text="La Binet & Field Ratio misura l'equilibrio tra Brand building e Activation. Strategie di crescita sostenibile tendono verso 60:40 o 2:1.";
-if(type==='sov')text="La Share of Voice indica la quota investimento del brand rispetto al totale mercato pubblicitario.";
-if(type==='esov')text="L'Excess Share of Voice è la differenza tra SOV e quota di mercato. ESOV positivo è correlato a crescita futura.";
-document.getElementById('modalText').innerHTML=text;
-document.getElementById('modal').style.display='flex';
-}
-function closeModal(){document.getElementById('modal').style.display='none'}
-
-let chart;
-function renderChart(u,m,l){
-const ctx=document.getElementById('chart');
-if(chart)chart.destroy();
-chart=new Chart(ctx,{
-type:'doughnut',
-data:{labels:['Upper','Mid','Lower'],
-datasets:[{data:[u,m,l],
-backgroundColor:['#E50100','#008596','#0F172A']}]},
-options:{plugins:{legend:{position:'bottom'}}}
-});
-}
+function openModal() { document.getElementById('infoModal').style.display = 'block'; }
+function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
+window.onclick = (e) => { if(e.target == document.getElementById('infoModal')) closeModal(); }
 </script>
 </body>
 </html>
